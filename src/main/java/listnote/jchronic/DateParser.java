@@ -24,12 +24,21 @@ public class DateParser {
 	    return Chronic.parse(string, options);
 	  }
 	  
+	  public static Timestamp toTimestamp(Span time) throws ParseException {
+		  String timeStr = time.toString().substring(1, 13);
+		  Date d = new SimpleDateFormat("dd-MMM-yyyy").parse(timeStr);
+		  return new Timestamp(d.getTime());
+	  }
+	  
+	  public static Timestamp parseToTimestamp(String string) throws ParseException {
+		  return toTimestamp(parse_now(string));
+	  }
+	  
 	  public static void main(String[] args) throws ParseException {
+		  
+		  
 			
-			Span time;
-		    time = parse_now("hello this happened on june 27 something interesting yay");
-		    
-		    System.out.println(time);
+			System.out.println(parseToTimestamp("jan 23 2004"));
 		    	    
 //		    Date d = new SimpleDateFormat("dd-MMM-yyyy").parse(date);
 		    

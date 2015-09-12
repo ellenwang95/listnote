@@ -3,15 +3,25 @@ package listnote;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
+import java.text.DateFormatSymbols;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.StringTokenizer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import listnote.jchronic.DateParser;
+
 public class ParseNotes {
-	private static final String DATE_PATTERN = "(0?[1-9]|[12][0-9]|3[01])/(0?[1-9]|1[012])/((19|20)\\d\\d)"; //dd/mm/yyyy
+	private static final DateFormatSymbols dfs = new DateFormatSymbols();
+	public static final String[] MONTHS_SHORT = dfs.getShortMonths();
+	public static final String[] MONTHS_FULL = dfs.getMonths();
+	
+	private static final String DAY_PATTERN = "(^0?[1-9]|[12][0-9]|3[01])"; //01 or 1 - 31
+	private static final String DATE_PATTERN = "((0?[1-9]|[12][0-9]|3[01])(/|-)(0?[1-9]|1[012])(/|-)((19|20)\\d\\d))"; //dd/mm/yyyy or dd-mm-yyyy
 	private static final String DEFINITION_PATTERN = "(^[a-zA-Z0-9]*)(:)"; //alphanumeric:
+	private static final String NUMBERED_LIST_PATTERN = "(\\d+)([)]|\\.)"; //1) 1. 
 	
 	protected DatabaseConfig db_config;
 	protected Database dbc;
@@ -21,9 +31,9 @@ public class ParseNotes {
 		this.dbc = db_config.connect(this.getClass().getSimpleName());
 	}
 	
+	//returns matched string
 	private static String parseByPattern(String staticPattern, String point_body) {
 		Pattern pattern = Pattern.compile(staticPattern);
-		
 		Matcher matcher = pattern.matcher(point_body);
 		
 		if(matcher.find()) {
@@ -33,9 +43,41 @@ public class ParseNotes {
 		return "";
 	}
 	
+	//null if not found
+	public Timestamp parseForDate(Point point) throws SQLException, ParseException {
+		String body = getBody(point);
+		
+	    String date = parseByPattern(DATE_PATTERN, body);
+	    if(date != "") { //found date! 
+	    	return DateParser.parseToTimestamp(body);
+	    } else {
+	    	StringTokenizer tokenized_body = new StringTokenizer(body);
+	    	//look for months 
+	    	while (tokenized_body.hasMoreTokens()) {
+	            String token = tokenized_body.nextToken();
+	    		if(stringContainsItemFromList(token, MONTHS_FULL) || stringContainsItemFromList(token, MONTHS_SHORT)) {
+	    			String next_token = tokenized_body.nextToken();
+	    			if(parseByPattern(DAY_PATTERN, next_token) != "") { //found date!
+	    				return DateParser.parseToTimestamp(token + " " + next_token);
+	    			}
+	    		}
+	        }
+	    }
+	    
+	    return null;
+	    
+	}
+	
 	public void parseNote(PointCollection note) {
+		
 		note.iterate_tree(0, (val, key) -> { //point, index
 			try {
+				//check for sequential point 
+				int seqNum = parseForNumberedList(val);
+				if(seqNum != -1) {
+					//add as sequential point
+					insertSequential(val.id, seqNum);
+				}
 				parsePoint(val);
 			} catch (Exception e) {
 				// TODO Auto-generated catch block
@@ -44,32 +86,44 @@ public class ParseNotes {
 		});
 	}
 	
+	//returns list number
+	public int parseForNumberedList(Point point) throws SQLException {
+		int num = -1;
+		String body = getBody(point);
+
+	    String numberedList = parseByPattern(NUMBERED_LIST_PATTERN, body);
+	    
+	    if(numberedList != "") {
+	    	num = Integer.parseInt(numberedList.substring(0, numberedList.length()-1));
+	    }
+	    
+	    return num;
+	    
+	    
+	}
+	
 	public void parsePoint(Point point) throws SQLException, ParseException {
 		String body = getBody(point);
-		
-	    String date = parseByPattern(DATE_PATTERN, body);
-	    System.out.println("Found date: " + date);
+		int note_id = getNoteId(point);
 	    
 	    String term = parseByPattern(DEFINITION_PATTERN, body);	    
 	    int def_begin = body.indexOf(term) + 1;
 	    String definition = body.substring(def_begin, body.length() - 1);
-	    
-	    System.out.println("Found definition: " + term + " : " + definition);
+	   	    
+	    if(definition != "") {
+		    System.out.println("Found definition: " + term + " : " + definition);
 
-	    
-	    if(date != "" || definition != "") {
-	    	int note_id = getNoteId(point);
-	    	
-	    	if(date != "") {
-	    		insertDate(date, note_id);
-	    	}
-	    	
-	    	if(definition != "") {
-	    		int user_id = getUserId(point);
-	    		insertDefinition(term, definition, note_id, user_id);
-	    		
-	    	}
+			int user_id = getUserId(point);
+			insertDefinition(term, definition, note_id, user_id);	
 	    }
+	    
+		Timestamp date = parseForDate(point);
+		
+		if(date != null) {
+			System.out.println("Found date: " + date);
+			insertDate(date, note_id);
+		}
+
 	}
 	
 	private String getBody(Point point) throws SQLException {
@@ -117,15 +171,15 @@ public class ParseNotes {
 	    return user_id;
 	}
 	
-	private void insertDate(String date, int note_id) throws ParseException, SQLException {
-	    Date d = new SimpleDateFormat("dd/MM/yyyy").parse(date);
-	    Timestamp timestamp = new Timestamp(d.getTime());
+	private void insertDate(Timestamp date, int note_id) throws ParseException, SQLException {
+//	    Date d = new SimpleDateFormat("dd/MM/yyyy").parse(date);
+//	    Timestamp timestamp = new Timestamp(d.getTime());
 	    
 		boolean independent = this.dbc.begin();
 		
 		if(independent) {
 			dbc.query(""
-					+ "INSERT INTO dates (date, note_id) VALUES (" + timestamp + "," + note_id + ")");	
+					+ "INSERT INTO dates (date, note_id) VALUES (" + date + "," + note_id + ")");	
 		}
 		
 		this.dbc.commit();
@@ -155,6 +209,30 @@ public class ParseNotes {
 		
 		this.dbc.commit();
 		
+	}
+	
+	private void insertSequential(int point_id, int num) throws SQLException {
+		
+		boolean independent = this.dbc.begin();
+		if(independent) {
+			dbc.query(""
+					+ "INSERT INTO sequential (point_id, num) VALUES (" + point_id + "," + num + ")");	
+		}
+		
+		this.dbc.commit();
+	}
+	
+	//returns matching item
+	public static boolean stringContainsItemFromList(String inputString, String[] items)
+	{
+	    for(int i =0; i < items.length; i++)
+	    {
+	        if(inputString.contains(items[i]))
+	        {
+	            return true;
+	        }
+	    }
+	    return false;
 	}
 
 	
