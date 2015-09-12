@@ -19,12 +19,17 @@ public class PointCollection {
 			this.unit = unit; this.descendants = descendants; this.ancestor = ancestor;
 		}
 	}
+	public PointCollection(DatabaseConfig db_config) throws IllegalArgumentException, SQLException {
+		this.db_config = db_config;
+		this.dbc = db_config.connect(this.getClass().getSimpleName());
+	}
 	public PointCollection(List<PointWrapper> units, Map<Integer, Integer> reverse_map, DatabaseConfig db_config) throws IllegalArgumentException, SQLException {
 		this.units = units;
 		this.reverse_map = reverse_map;
 		this.db_config = db_config;
 		this.dbc = db_config.connect(this.getClass().getSimpleName());
 	}
+	
 	public Integer push(Point unit, Integer ancestor) {
 		Integer ret;
 		if((ret = this.reverse_map.get(unit.id)) != null) {
@@ -39,6 +44,9 @@ public class PointCollection {
 			}
 			return this.count()-1;
 		}
+	}
+	public Integer push(Point unit) {
+		return this.push(unit, null);
 	}
 	public List<Integer> roots() {
 		List<Integer> ret = new ArrayList<Integer>();
@@ -174,5 +182,12 @@ public class PointCollection {
 		catch(SQLException e) {
 			System.out.println(e.getMessage());
 		}
+	}
+	
+	public List<PointWrapper> getUnits() {
+		return this.units; 
+	}
+	public Map<Integer, Integer> getReverse_map() {
+		return this.reverse_map;
 	}
 }

@@ -7,6 +7,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class DatabaseConfig {
+	static final String LDB = "listnote";
+	static final String LAUTHDB = "listnote_auth";
 	static Map<String,String[]> db_to_creds = new HashMap<String,String[]>();
 	static {
 		Map<String,String[]> temp_map = new HashMap<String,String[]>();
@@ -18,12 +20,18 @@ public class DatabaseConfig {
 	static Map<String,String> class_to_db = new HashMap<String,String>();
 	static {
 		Map<String,String> temp_map = new HashMap<String,String>();
-		temp_map.put("ParseNotes", "listnote");
+		temp_map.put("ParseNotes", LDB);
+		temp_map.put("Renderer", LDB);
+		temp_map.put("Point", LDB);
+		temp_map.put("SequentialPoint", LDB);
+		temp_map.put("PointCollection", LDB);
+		
+		//-----
+		
+		temp_map.put("CurrentUser", LAUTHDB);
 	}
 	protected Map<String,Database> connection_cache = new HashMap<String,Database>();
-	public DatabaseConfig() {
-		System.out.println(this.getClass().getSimpleName());
-	}
+	public DatabaseConfig() {}
 	public Database connect(String classname) throws IllegalArgumentException, SQLException {
 		String db;
 		if((db = class_to_db.get(classname)) != null) {
