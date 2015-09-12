@@ -67,6 +67,9 @@ public class Database {
 			return true;
 		}
 	}
+	public PreparedStatement prepare(String sql) throws SQLException {
+		return this.mysqli.prepareStatement(sql);
+	}
 	protected Statement stmt() throws SQLException {
 		return mysqli.createStatement();
 	}
