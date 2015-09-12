@@ -33,6 +33,17 @@ public class ParseNotes {
 		return "";
 	}
 	
+	public void parseNote(PointCollection note) {
+		note.iterate_tree(0, (val, key) -> { //point, index
+			try {
+				parsePoint(val);
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		});
+	}
+	
 	public void parsePoint(Point point) throws SQLException, ParseException {
 		String body = getBody(point);
 		
@@ -148,12 +159,12 @@ public class ParseNotes {
 
 	
 	public static void main(String[] args) {
-		Point test = 
-		
-		String datePoint = "This happened on 08/12/2006 when whoeever did whatever.";
-		parsePoint(datePoint);
-		
-		String defPoint = "SomeWord: means this and that";
-		parsePoint(defPoint);
+//		Point test = 
+//		
+//		String datePoint = "This happened on 08/12/2006 when whoeever did whatever.";
+//		parsePoint(datePoint);
+//		
+//		String defPoint = "SomeWord: means this and that";
+//		parsePoint(defPoint);
 	}
 }
