@@ -1,0 +1,229 @@
+body{
+	margin:0px;
+	font-family:'Open Sans', sans-serif;
+}
+a {
+	color:inherit;
+	text-decoration: none;
+}
+body,html{
+	height:100%;
+}
+span,label{
+	display:inline-block;
+	-webkit-box-sizing:border-box;
+	-moz-box-sizing:border-box;
+	box-sizing:border-box;
+}
+input, textarea, .editable{
+	font-family:inherit;
+	outline:none;
+	border:none;
+	background:none;
+}
+textarea {
+	resize:none;
+}
+
+.unstyled_vertical_list {
+	list-style-type: none;
+	margin:0;
+	padding:0;
+}
+
+.placeholder {
+	position:absolute;
+	color:#CCC;
+	font-style:italic;
+}
+
+.rounded_2 {
+	-webkit-border-radius: 2px;
+	-moz-border-radius: 2px;
+	border-radius: 2px;
+}
+.rounded_4 {
+	-webkit-border-radius: 4px;
+	-moz-border-radius: 4px;
+	border-radius: 4px;
+}
+.circular {
+	-webkit-border-radius: 50%;
+	-moz-border-radius: 50%;
+	border-radius: 50%;
+}
+
+.notransition {
+  -webkit-transition: none !important;
+  -moz-transition: none !important;
+  -o-transition: none !important;
+  -ms-transition: none !important;
+  transition: none !important;
+}
+.transition_2 {
+	-webkit-transition:all 0.2s ease-in-out;
+	-moz-transition:all 0.2s ease-in-out;
+	-o-transition:all 0.2s ease-in-out;
+	transition:all 0.2s ease-in-out;
+}
+.transition_4 {
+	-webkit-transition:all 0.4s ease-in-out;
+	-moz-transition:all 0.4s ease-in-out;
+	-o-transition:all 0.4s ease-in-out;
+	transition:all 0.4s ease-in-out;
+}
+.transition_6 {
+	-webkit-transition:all 0.6s ease-in-out;
+	-moz-transition:all 0.6s ease-in-out;
+	-o-transition:all 0.6s ease-in-out;
+	transition:all 0.6s ease-in-out;
+}
+.transition_sharp_4 {
+	-webkit-transition:all 0.4s cubic-bezier(0.8,0,0.2,1);
+	-moz-transition:all 0.4s cubic-bezier(0.8,0,0.2,1);
+	-o-transition:all 0.4s cubic-bezier(0.8,0,0.2,1);
+	transition:all 0.4s cubic-bezier(0.8,0,0.2,1);
+}
+.transition_sharp_6 {
+	-webkit-transition:all 0.6s cubic-bezier(0.8,0,0.2,1);
+	-moz-transition:all 0.6s cubic-bezier(0.8,0,0.2,1);
+	-o-transition:all 0.6s cubic-bezier(0.8,0,0.2,1);
+	transition:all 0.6s cubic-bezier(0.8,0,0.2,1);
+}
+
+.text_overflow_ellipsis {
+	-webkit-text-overflow:ellipsis;
+	-moz-text-overflow:ellipsis;
+	-o-text-overflow:ellipsis;
+	-ms-text-overflow:ellipsis;
+	text-overflow:ellipsis;
+}
+
+.center_fill {
+	width:100%;
+	overflow:hidden;
+}
+.center_fill .left {
+	float:left;
+}
+.center_fill .right {
+	float:right;
+}
+.center_fill .full_middle {
+	overflow:hidden;
+}
+.center_fill .full_middle .content {
+	width:100%;
+}
+
+.light_separator {
+	width:100%;
+	border-top:#EEE solid 1px;
+}
+
+.button_container {
+	position:relative;
+}
+	.button_underlay {
+		position:absolute;
+		bottom:-2px;
+		height:4px;
+		width:100%;
+		z-index:0;
+	}
+	.button_overlay {
+		position:relative;
+		width:100%;
+		z-index:1;
+		top:0;
+	}
+	.button_overlay:hover {
+		top:-2px;
+	}
+	.button_overlay:active {
+		top:2px;
+	}
+	
+.sprite_container {
+	overflow:hidden;
+	margin:0 auto;
+	position:relative;
+}
+.spritemap {
+	width:100%;
+	position:absolute;
+	top:0;
+	left:0;
+}
+
+.editable_container {
+	cursor:text;
+}
+	
+.mini_avatar {
+	width:30px;
+}
+
+.user_avatar_inline {
+	position:relative;
+}
+.user_avatar_inline img, .user_avatar_inline span {
+	vertical-align:middle;
+	display:inline-block;
+}
+
+@font-face {
+	font-family: "Open Sans";
+	src:url(../vendor/Open_Sans/OpenSans-BoldItalic.ttf);
+	font-weight:700;
+	font-style: italic;
+}
+@font-face {
+	font-family: "Open Sans";
+	src:url(../vendor/Open_Sans/OpenSans-Bold.ttf);
+	font-weight:700;
+}
+@font-face {
+	font-family: "Open Sans";
+	src:url(../vendor/Open_Sans/OpenSans-ExtraBoldItalic.ttf);
+	font-weight:900;
+	font-style: italic;
+}
+@font-face {
+	font-family: "Open Sans";
+	src:url(../vendor/Open_Sans/OpenSans-ExtraBold.ttf);
+	font-weight:900;
+}
+@font-face {
+	font-family: "Open Sans";
+	src:url(../vendor/Open_Sans/OpenSans-Italic.ttf);
+	font-style: italic;
+	font-family:normal;
+}
+@font-face {
+	font-family: "Open Sans";
+	src:url(../vendor/Open_Sans/OpenSans-LightItalic.ttf);
+	font-weight:300;
+	font-style: italic;
+}
+@font-face {
+	font-family: "Open Sans";
+	src:url(../vendor/Open_Sans/OpenSans-Light.ttf);
+	font-weight:300;
+}
+@font-face {
+	font-family: "Open Sans";
+	src:url(../vendor/Open_Sans/OpenSans-Regular.ttf);
+	font-family:normal;
+}
+@font-face {
+	font-family: "Open Sans";
+	src:url(../vendor/Open_Sans/OpenSans-SemiboldItalic.ttf);
+	font-weight:500;
+	font-style: italic;
+}
+@font-face {
+	font-family: "Open Sans";
+	src:url(../vendor/Open_Sans/OpenSans-Semibold.ttf);
+	font-weight:500;
+}
