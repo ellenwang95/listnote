@@ -40,10 +40,17 @@ public class PointCollection {
 			return this.count()-1;
 		}
 	}
-	public Object first() {
+	public List<Integer> roots() {
+		List<Integer> ret = new ArrayList<Integer>();
+		for(Integer key : this._built.keySet()) {
+			ret.add(key);
+		}
+		return ret;
+	}
+	public PointWrapper first() {
 		return units.get(0);
 	}
-	public Object last() {
+	public PointWrapper last() {
 		return units.get(units.size()-1);
 	}
 	public int count() {
@@ -82,6 +89,9 @@ public class PointCollection {
 			this._traverse_down(cursor, _bare);
 			return cursor;
 		}
+	}
+	public void clear() {
+		this.units.clear();
 	}
 	public Integer _traverse_up(Integer cursor, ArrayList<Integer> path_trace, boolean _bare, boolean _superpath) {
 		PointWrapper current_unit = this.units.get(cursor);

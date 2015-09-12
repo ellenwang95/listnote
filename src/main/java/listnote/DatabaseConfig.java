@@ -18,7 +18,7 @@ public class DatabaseConfig {
 	static Map<String,String> class_to_db = new HashMap<String,String>();
 	static {
 		Map<String,String> temp_map = new HashMap<String,String>();
-		temp_map.put("", "");
+		temp_map.put("ParseNotes", "listnote");
 	}
 	protected Map<String,Database> connection_cache = new HashMap<String,Database>();
 	public DatabaseConfig() {
