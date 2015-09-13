@@ -46,7 +46,7 @@ public class Point {
 			}
 		}
 		catch(SQLException e) {
-			System.out.println(e.getMessage());
+			e.printStackTrace();
 		}
 	}
 	public void pull_tags() {
@@ -59,11 +59,11 @@ public class Point {
 				result.close();
 			}
 			catch(SQLException e) {
-				System.out.println(e.getMessage());
+				e.printStackTrace();
 			}
 		}
 		catch(SQLException e) {
-			System.out.println(e.getMessage());
+			e.printStackTrace();
 		}
 	}
 	public Integer getId() {

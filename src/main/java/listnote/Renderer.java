@@ -36,10 +36,12 @@ public class Renderer {
 		}
 		return "";
 	}
-	public String render_list_view(CurrentUser current_user) {
+	public String render_list_view(NoteCollectionFactory factory) throws IllegalArgumentException, SQLException, TemplateException, IOException {
 		StringWriter sw = new StringWriter();
 		Map<String,Object> root = new HashMap<String,Object>();
-		NoteCollection collection = 
+		root.put("note_collection", factory.spawn_for_user());
+		this.cfg.getTemplate("list_view").process(root, sw);
+		return sw.toString();
 	}
 	public String render_note(Note note) throws IllegalArgumentException, SQLException {
 		StringWriter sw = new StringWriter();
@@ -54,7 +56,7 @@ public class Renderer {
 			list_templates[1] = this.cfg.getTemplate("def_list");
 		}
 		catch(IOException e) {
-			System.out.println(e.getMessage());
+			e.printStackTrace();
 		}
 		int prev_type = -1;
 		StringBuilder ret = new StringBuilder();

@@ -24,11 +24,11 @@ abstract public class AnyUser {
 				this._db_pulled = true;
 			}
 			catch(SQLException e) {
-				System.out.println(e.getMessage());
+				e.printStackTrace();
 			}
 		}
 		catch(SQLException e) {
-			System.out.println(e.getMessage());
+			e.printStackTrace();
 		}
 	}
 }

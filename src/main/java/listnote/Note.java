@@ -43,7 +43,7 @@ public class Note {
 			}
 		}
 		catch(SQLException e) {
-			System.out.println(e.getMessage());
+			e.printStackTrace();
 		}
 	}
 	public PointCollection pull_children() throws IllegalArgumentException, SQLException {
@@ -56,11 +56,11 @@ public class Note {
 				return ret;
 			}
 			catch(SQLException e) {
-				System.out.println(e.getMessage());
+				e.printStackTrace();
 			}
 		}
 		catch(SQLException e) {
-			System.out.println(e.getMessage());
+			e.printStackTrace();
 		}
 		return null;
 	}

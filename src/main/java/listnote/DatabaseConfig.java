@@ -12,8 +12,8 @@ public class DatabaseConfig {
 	static Map<String,String[]> db_to_creds = new HashMap<String,String[]>();
 	static {
 		Map<String,String[]> temp_map = new HashMap<String,String[]>();
-		temp_map.put("listnote", new String[]{"localhost","listnote","mhackrules","listnote"});
-		temp_map.put("listnote_auth", new String[]{"localhost","listnote_auth","mhackrules","listnote_auth"});
+		temp_map.put("listnote", new String[]{"localhost","listnote","listnoteisthebest","listnote"});
+		temp_map.put("listnote_auth", new String[]{"localhost","listnote_auth","listnoteisthebest","listnote_auth"});
 		db_to_creds = Collections.unmodifiableMap(temp_map);
 	}
 	
@@ -25,10 +25,12 @@ public class DatabaseConfig {
 		temp_map.put("Point", LDB);
 		temp_map.put("SequentialPoint", LDB);
 		temp_map.put("PointCollection", LDB);
+		temp_map.put("NoteCollectionFactory", LDB);
 		
 		//-----
 		
 		temp_map.put("CurrentUser", LAUTHDB);
+		class_to_db = Collections.unmodifiableMap(temp_map);
 	}
 	protected Map<String,Database> connection_cache = new HashMap<String,Database>();
 	public DatabaseConfig() {}
@@ -46,7 +48,7 @@ public class DatabaseConfig {
 			}
 		}
 		else {
-			throw new IllegalArgumentException("Database not mapped for class "+db);
+			throw new IllegalArgumentException("Database not mapped for class "+classname);
 		}
 	}
 }
