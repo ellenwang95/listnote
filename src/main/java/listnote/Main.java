@@ -21,7 +21,8 @@ public class Main {
 	static final DatabaseConfig DB_CONFIG = new DatabaseConfig();
 	protected static Configuration load_freemarker_configuration() throws IOException {
     	Configuration cfg = new Configuration();
-    	cfg.setDirectoryForTemplateLoading(new File(System.getProperty("user.dir")+"/src/main/resources/templates/"));
+//    	cfg.setDirectoryForTemplateLoading(new File(System.getProperty("user.dir")+"/src/main/resources/templates/"));
+    	System.out.println(System.getProperty("user.dir")+"/src/main/resources/templates/");
     	cfg.setDefaultEncoding("UTF-8");
     	cfg.setTemplateExceptionHandler(TemplateExceptionHandler.HTML_DEBUG_HANDLER);
     	return cfg;
@@ -32,7 +33,7 @@ public class Main {
 	}
 	
     public static void main(String[] args) throws SQLException, IOException {
-    	staticFileLocation(System.getProperty("user.dir")+"/src/main/resources/public/");
+    	staticFileLocation("/public");
     	Configuration cfg = Main.load_freemarker_configuration();
     	CurrentUser current_user = new CurrentUser(DB_CONFIG);
     	NoteCollectionFactory ncfactory = new NoteCollectionFactory(current_user, DB_CONFIG);
@@ -68,10 +69,16 @@ public class Main {
     		return sw.toString();
     	};
     	
-    	HTTPHandler unauthenticated_index = (request, response) -> {
+    	HTTPHandler unauthenticated_view = (request, response) -> {
     		Writer sw = new StringWriter();
     		Map<String,Object> root = new HashMap<String,Object>();
-    		return "";
+    		try {
+				cfg.getTemplate("landing.ftl").process(root, sw);
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+    		return sw.toString();
     	};
     	
     	post("/", (request, response) -> {
@@ -83,7 +90,7 @@ public class Main {
     				return authenticated_view.method(request, response);
     			}
     			else {
-    				
+    				return unauthenticated_view.method(request, response);
     			}
     		}
     		return "";
@@ -94,9 +101,8 @@ public class Main {
     			return authenticated_view.method(request, response);
     		}
     		else {
-    			
+				return unauthenticated_view.method(request, response);
     		}
-			return "";
     	});
     	get("/ajax/", (request, response) -> {
     		String cookie = request.cookie("rememberme");
