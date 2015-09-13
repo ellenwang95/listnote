@@ -21,7 +21,7 @@ public class Main {
 	static final DatabaseConfig DB_CONFIG = new DatabaseConfig();
 	protected static Configuration load_freemarker_configuration() throws IOException {
     	Configuration cfg = new Configuration();
-    	cfg.setDirectoryForTemplateLoading(new File(System.getProperty("user.dir")+"/resources/templates/"));
+    	cfg.setDirectoryForTemplateLoading(new File(System.getProperty("user.dir")+"/src/main/resources/templates/"));
     	cfg.setDefaultEncoding("UTF-8");
     	cfg.setTemplateExceptionHandler(TemplateExceptionHandler.HTML_DEBUG_HANDLER);
     	return cfg;
@@ -31,10 +31,11 @@ public class Main {
 		public String method(Request request, Response response);
 	}
 	
-    public static void main(String[] args) throws SQLException {
-    	staticFileLocation(System.getProperty("user.dir")+"/resources/public/");
+    public static void main(String[] args) throws SQLException, IOException {
+    	staticFileLocation(System.getProperty("user.dir")+"/src/main/resources/public/");
     	Configuration cfg = Main.load_freemarker_configuration();
     	CurrentUser current_user = new CurrentUser(DB_CONFIG);
+    	NoteCollectionFactory ncfactory = new NoteCollectionFactory(current_user, DB_CONFIG);
     	Renderer renderer = new Renderer(cfg);
     	
     	HTTPHandler authenticated_view = (request, response) -> {
@@ -42,19 +43,36 @@ public class Main {
     		Map<String,Object> root = new HashMap<String,Object>();
     		if(request.queryParams("node_id") != "") {
     			Note note = new Note(Integer.parseInt(request.queryParams("note_id")), DB_CONFIG);
-        		root.put("rendered_body", renderer.render_note(note));
+        		try {
+        			root.put("rendered_body", renderer.render_note(note));
+        		}
+        		catch(Exception e) {
+        			e.printStackTrace();
+        		}
     		}
     		else {
-    			root.put("rendered_body", renderer.render_list_view(current_user));
+    			try {
+    				root.put("rendered_body", renderer.render_list_view(ncfactory));
+	    		}
+	    		catch(Exception e) {
+	    			e.printStackTrace();
+	    		}
     		}
     		root.put("rendered_navigation", renderer.render_app_nav(request.pathInfo(), current_user));
-    		cfg.getTemplate("index.ftl").process(root, sw);
+    		try {
+        		cfg.getTemplate("index.ftl").process(root, sw); //why so many exceptions ;_;
+    		}
+    		catch(Exception e) {
+    			e.printStackTrace();
+    		}
     		return sw.toString();
     	};
     	
     	HTTPHandler unauthenticated_index = (request, response) -> {
     		Writer sw = new StringWriter();
-    	}
+    		Map<String,Object> root = new HashMap<String,Object>();
+    		return "";
+    	};
     	
     	post("/", (request, response) -> {
     		String username, password, cookie_str;
@@ -68,6 +86,7 @@ public class Main {
     				
     			}
     		}
+    		return "";
     	});
     	get("/", (request, response) -> {
     		String cookie = request.cookie("rememberme");
@@ -77,12 +96,13 @@ public class Main {
     		else {
     			
     		}
+			return "";
     	});
     	get("/ajax/", (request, response) -> {
     		String cookie = request.cookie("rememberme");
     		if(current_user.authenticate_remember_me(cookie)) {
-    			
     		}
+			return "";
     	});
     }
 }

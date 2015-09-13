@@ -25,6 +25,7 @@ public class CurrentUser extends AnyUser {
 	}
 	public CurrentUser(DatabaseConfig db_config) throws IllegalArgumentException, SQLException {
 		this.db_config = db_config;
+		System.out.println(this.getClass().getSimpleName());
 		this.dbc = db_config.connect(this.getClass().getSimpleName());
 	}
 	public CurrentUser setUser(String user) {
@@ -53,7 +54,7 @@ public class CurrentUser extends AnyUser {
 	public String authenticate_from_scratch() {
 		try {
 			boolean independent_transaction = this.dbc.begin();
-			PreparedStatement stmt = this.dbc.prepare("SELECT id, password FROM users WHERE user=?");
+			PreparedStatement stmt = this.dbc.prepare("SELECT id, password FROM users WHERE username=?");
 			stmt.setString(1, this.username);
 			ResultSet result = stmt.executeQuery();
 			try {
@@ -82,26 +83,31 @@ public class CurrentUser extends AnyUser {
 				}
 			}
 			catch(SQLException e) {
-				System.out.println(e.getMessage());
+				e.printStackTrace();
 				if(independent_transaction) this.dbc.rollback();
 			}
 		}
 		catch(SQLException e) {
-			System.out.println(e.getMessage());
+			e.printStackTrace();
 		}
 		return null;
 	}
 	public boolean authenticate_remember_me(String cookie) {
-		String[] crumbs = cookie.split(":");
-		if(this._verify_remember_me(crumbs[0], crumbs[1], crumbs[2])) {
-			this.username = crumbs[0];
-			this.pull_information();
-			this._is_logged_in = true;
-			this._exists = true;
-			return true;
+		if(cookie!="") {
+			String[] crumbs = cookie.split("%3A");
+			if(this._verify_remember_me(crumbs[0], crumbs[1], crumbs[2])) {
+				this.username = crumbs[0];
+				this.pull_information();
+				this._is_logged_in = true;
+				this._exists = true;
+				return true;
+			}
+			else {
+				this._is_logged_in = false;
+				return false;
+			}
 		}
 		else {
-			this._is_logged_in = false;
 			return false;
 		}
 	}
@@ -116,55 +122,59 @@ public class CurrentUser extends AnyUser {
 //				return BCrypt.checkpw(pass, results.getString("password"));
 //			}
 //			catch(SQLException e) {
-//				System.out.println(e.getMessage());
+//				e.printStackTrace();
 //			}
 //		}
 //		catch(SQLException e) {
-//			System.out.println(e.getMessage());
+//			e.printStackTrace();
 //		}
 //		return false;
 //	}
 	protected boolean _verify_remember_me(String user, String token, String mac) {
 		try {
-			PreparedStatement stmt = this.dbc.prepare("SELECT secret FROM users WHERE user=?");
+			PreparedStatement stmt = this.dbc.prepare("SELECT secret FROM users WHERE username=?");
+			stmt.setString(1, user);
 			ResultSet result = stmt.executeQuery();
 			try {
-				result.next();
-				String secret = result.getString("secret");
-				try {
-					Mac crypt = Mac.getInstance("HmacSHA256");
-					SecretKeySpec secret_spec = new SecretKeySpec(secret.getBytes(),"HMacSHA256");
-					crypt.init(secret_spec);
-					byte[] digest = crypt.doFinal(token.getBytes());
-					if(mac.getBytes() == digest) {
-						this._exists = true;
-						this._is_logged_in = true;
-						return true;
+				if(result.next()) {
+					String secret = result.getString("secret");
+					if(secret!=null) {
+						try {
+							Mac crypt = Mac.getInstance("HmacSHA256");
+							SecretKeySpec secret_spec = new SecretKeySpec(secret.getBytes(),"HMacSHA256");
+							crypt.init(secret_spec);
+							byte[] digest = crypt.doFinal(token.getBytes());
+							if(mac.getBytes() == digest) {
+								this._exists = true;
+								this._is_logged_in = true;
+								return true;
+							}
+							else {
+								this._is_logged_in = false;
+								return false;
+							}
+						}
+						catch(InvalidKeyException e) {
+							e.printStackTrace();
+						}
+						catch(NoSuchAlgorithmException e) {
+							e.printStackTrace();
+						}
+						finally {
+							this._is_logged_in = false;
+						}	
 					}
-					else {
-						this._is_logged_in = false;
-						return false;
-					}
-				}
-				catch(InvalidKeyException e) {
-					System.out.println(e.getMessage());
-				}
-				catch(NoSuchAlgorithmException e) {
-					System.out.println(e.getMessage());
-				}
-				finally {
-					this._is_logged_in = false;
 				}
 			}
 			catch(SQLException e) {
-				System.out.println(e.getMessage());
+				e.printStackTrace();
 			}
 			finally {
 				this._is_logged_in = false;
 			}
 		}
 		catch(SQLException e) {
-			System.out.println(e.getMessage());
+			e.printStackTrace();
 		}
 		finally {
 			this._is_logged_in = false;
