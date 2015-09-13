@@ -17,7 +17,9 @@ abstract public class AnyUser {
 	
 	public void pull_information() {
 		try {
-			ResultSet result = this.dbc.query("SELECT id, avatar FROM users WHERE id="+this.username);
+			PreparedStatement stmt = this.dbc.prepare("SELECT id, avatar FROM users WHERE username=?");
+			stmt.setString(1, this.username);
+			ResultSet result =  stmt.executeQuery();
 			try {
 				result.next();
 				this._set_object_properties(result.getInt("id"), result.getString("avatar"));

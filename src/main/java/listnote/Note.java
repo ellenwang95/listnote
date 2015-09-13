@@ -20,9 +20,10 @@ public class Note {
 		this.db_config = db_config;
 		this.dbc = db_config.connect(this.getClass().getSimpleName());
 	}
-	public Note(int id, DatabaseConfig db_config) {
+	public Note(int id, DatabaseConfig db_config) throws IllegalArgumentException, SQLException {
 		this.id = id;
 		this.db_config = db_config;
+		this.dbc = db_config.connect(this.getClass().getSimpleName());
 	}
 	public void _set_object_properties(String title, Date date, int user_id) {
 		this.user_id = user_id;
@@ -49,10 +50,12 @@ public class Note {
 	public PointCollection pull_children() throws IllegalArgumentException, SQLException {
 		PointCollection ret = new PointCollection(this.db_config);
 		try {
-			ResultSet result = this.dbc.query("SELECT id, author, level, body FROM notes WHERE parent_id="+this.id+";");
+			ResultSet result = this.dbc.query("SELECT id, type, user_id, body FROM points WHERE parent IS NULL;"); // all roots
 			try {
-				result.next();
-				ret.push(new Point(result.getInt("id"), result.getInt("author"), 0, result.getInt("parent_id"), result.getString("body"), this.db_config));
+				while(result.next()) {
+					int root_cursor = ret.push(new Point(result.getInt("id"), result.getInt("type"), result.getInt("user_id"), 0, null, result.getString("body"), this.db_config));
+					ret.build(root_cursor, false, false);
+				}
 				return ret;
 			}
 			catch(SQLException e) {

@@ -21,8 +21,8 @@ public class Main {
 	static final DatabaseConfig DB_CONFIG = new DatabaseConfig();
 	protected static Configuration load_freemarker_configuration() throws IOException {
     	Configuration cfg = new Configuration();
-//    	cfg.setDirectoryForTemplateLoading(new File(System.getProperty("user.dir")+"/src/main/resources/templates/"));
-    	System.out.println(System.getProperty("user.dir")+"/src/main/resources/templates/");
+    	cfg.setDirectoryForTemplateLoading(new File(System.getProperty("user.dir")+"/src/main/resources/templates/"));
+//    	System.out.println(System.getProperty("user.dir")+"/src/main/resources/templates/");
     	cfg.setDefaultEncoding("UTF-8");
     	cfg.setTemplateExceptionHandler(TemplateExceptionHandler.HTML_DEBUG_HANDLER);
     	return cfg;
@@ -42,9 +42,10 @@ public class Main {
     	HTTPHandler authenticated_view = (request, response) -> {
     		Writer sw = new StringWriter();
     		Map<String,Object> root = new HashMap<String,Object>();
-    		if(request.queryParams("node_id") != "") {
-    			Note note = new Note(Integer.parseInt(request.queryParams("note_id")), DB_CONFIG);
+    		String note_id = request.queryParams("note_id");
+    		if(note_id != "" && note_id != null) {
         		try {
+        			Note note = new Note(Integer.parseInt(request.queryParams("note_id")), DB_CONFIG);
         			root.put("rendered_body", renderer.render_note(note));
         		}
         		catch(Exception e) {
@@ -59,7 +60,12 @@ public class Main {
 	    			e.printStackTrace();
 	    		}
     		}
-    		root.put("rendered_navigation", renderer.render_app_nav(request.pathInfo(), current_user));
+    		try {
+				root.put("rendered_navigation", renderer.render_app_nav(request.pathInfo(), current_user, ncfactory));
+			} catch (Exception e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
     		try {
         		cfg.getTemplate("index.ftl").process(root, sw); //why so many exceptions ;_;
     		}
@@ -83,10 +89,12 @@ public class Main {
     	
     	post("/", (request, response) -> {
     		String username, password, cookie_str;
-    		if((username=request.queryParams("username")) != "" && (password = request.queryParams("password")) != "") {
+//    		System.out.println(request.)
+    		if((username=request.queryParams("u")) != "" && request.queryParams("u")!=null && (password = request.queryParams("p")) != "" && request.queryParams("p") != null) {
     			current_user.setUser(username).setPassword(password);
     			if((cookie_str = current_user.authenticate_from_scratch()) != null) {
-    				response.cookie("rememberme", cookie_str, 3600, true);
+    				System.out.println(cookie_str);
+    				response.cookie("rememberme", cookie_str);
     				return authenticated_view.method(request, response);
     			}
     			else {
@@ -102,6 +110,16 @@ public class Main {
     		}
     		else {
 				return unauthenticated_view.method(request, response);
+    		}
+    	});
+    	get("/login/", (request, response) -> {
+    		String cookie = request.cookie("rememberme");
+    		if(current_user.authenticate_remember_me(cookie)) {
+    			response.redirect("/");
+    			return "";
+    		}
+    		else {
+				return renderer.render_login();
     		}
     	});
     	get("/ajax/", (request, response) -> {

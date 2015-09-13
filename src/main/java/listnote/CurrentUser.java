@@ -9,12 +9,11 @@ import org.mindrot.jbcrypt.BCrypt;
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
 
+import java.util.Base64;
+import java.util.Base64.*;
 public class CurrentUser extends AnyUser {
 	protected boolean _is_logged_in = false;
 	protected String password;
-	
-	protected DatabaseConfig db_config;
-	protected Database dbc;
 	
 	public CurrentUser(String username, String password, DatabaseConfig db_config) throws IllegalArgumentException, SQLException {
 		this.password = password;
@@ -33,7 +32,7 @@ public class CurrentUser extends AnyUser {
 		return this;
 	}
 	public CurrentUser setPassword(String user) {
-		this.username = user;
+		this.password = user;
 		return this;
 	}
 	
@@ -58,12 +57,15 @@ public class CurrentUser extends AnyUser {
 			stmt.setString(1, this.username);
 			ResultSet result = stmt.executeQuery();
 			try {
-				result.next();
-				if(BCrypt.checkpw(this.password, result.getString("password"))) {
+				if(result.next() && BCrypt.checkpw(this.password, result.getString("password"))) {
+					this._is_logged_in = true;
+					this._exists = true;
+					this.pull_information();
+					
 					SessionIdentifierGenerator r = new SessionIdentifierGenerator();
 					String token = r.nextSessionId();
 					String secret = r.nextSessionId();
-					PreparedStatement cookie_upd_stmt = this.dbc.prepare("INSERT INTO users (token, secret, start) VALUES (?, ?, NOW()) WHERE id=?;");
+					PreparedStatement cookie_upd_stmt = this.dbc.prepare("UPDATE users SET token=?, secret=?, start=NOW() WHERE id=?;");
 					cookie_upd_stmt.setString(1, token);
 					cookie_upd_stmt.setString(2, secret);
 					cookie_upd_stmt.setInt(3, result.getInt("id"));
@@ -75,7 +77,8 @@ public class CurrentUser extends AnyUser {
 						crypt = Mac.getInstance("HmacSHA256");
 						crypt.init(secret_spec);
 						byte[] digest = crypt.doFinal(token.getBytes());
-						return this.username + ":" + token + ":" + (new String(digest));
+						Encoder encoder = Base64.getEncoder();
+						return this.username + ":" + token + ":" + encoder.encodeToString(digest);
 					} catch (NoSuchAlgorithmException | InvalidKeyException e) {
 						// TODO Auto-generated catch block
 						e.printStackTrace();
@@ -93,8 +96,8 @@ public class CurrentUser extends AnyUser {
 		return null;
 	}
 	public boolean authenticate_remember_me(String cookie) {
-		if(cookie!="") {
-			String[] crumbs = cookie.split("%3A");
+		if(cookie!="" && cookie!=null) {
+			String[] crumbs = cookie.split(":");
 			if(this._verify_remember_me(crumbs[0], crumbs[1], crumbs[2])) {
 				this.username = crumbs[0];
 				this.pull_information();
@@ -144,7 +147,10 @@ public class CurrentUser extends AnyUser {
 							SecretKeySpec secret_spec = new SecretKeySpec(secret.getBytes(),"HMacSHA256");
 							crypt.init(secret_spec);
 							byte[] digest = crypt.doFinal(token.getBytes());
-							if(mac.getBytes() == digest) {
+							Encoder encoder = Base64.getEncoder();
+							System.out.println(mac);
+							System.out.println(new String(encoder.encode(digest)));
+							if(mac.equals(encoder.encodeToString(digest))) {
 								this._exists = true;
 								this._is_logged_in = true;
 								return true;
@@ -162,7 +168,7 @@ public class CurrentUser extends AnyUser {
 						}
 						finally {
 							this._is_logged_in = false;
-						}	
+						}
 					}
 				}
 			}

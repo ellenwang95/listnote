@@ -19,11 +19,18 @@ public class Renderer {
 	public Renderer(Configuration cfg) {
 		this.cfg = cfg;
 	}
-	public String render_app_nav(String path, CurrentUser user) {
+	public String render_login() throws TemplateException, IOException {
+		StringWriter sw = new StringWriter();
+		Map<String,Object> root = new HashMap<String,Object>();
+		cfg.getTemplate("login.ftl").process(root, sw);
+		return sw.toString();
+	}
+	public String render_app_nav(String path, CurrentUser user, NoteCollectionFactory factory) throws IllegalArgumentException, SQLException {
 		StringWriter sw = new StringWriter();
 		Map<String,Object> root = new HashMap<String,Object>();
 		root.put("path", path);
 		root.put("user", user);
+		root.put("note_collection", factory.spawn_for_user());
 		try {
 			this.cfg.getTemplate("app_nav.ftl").process(root, sw);
 			return sw.toString();
@@ -40,7 +47,7 @@ public class Renderer {
 		StringWriter sw = new StringWriter();
 		Map<String,Object> root = new HashMap<String,Object>();
 		root.put("note_collection", factory.spawn_for_user());
-		this.cfg.getTemplate("list_view").process(root, sw);
+		this.cfg.getTemplate("list_view.ftl").process(root, sw);
 		return sw.toString();
 	}
 	public String render_note(Note note) throws IllegalArgumentException, SQLException {
@@ -52,34 +59,43 @@ public class Renderer {
 //		List<String> point_cluster = new ArrayList<String>();
 		Template[] list_templates = new Template[2];
 		try {
-			list_templates[0] = this.cfg.getTemplate("bullet_list");
-			list_templates[1] = this.cfg.getTemplate("def_list");
+			list_templates[0] = this.cfg.getTemplate("bullet_list.ftl");
+			list_templates[1] = this.cfg.getTemplate("def_list.ftl");
+			list_templates[2] = this.cfg.getTemplate("bio_list.ftl");
 		}
 		catch(IOException e) {
 			e.printStackTrace();
 		}
 		int prev_type = -1;
 		StringBuilder ret = new StringBuilder();
-		collection.iterate_tree(collection.roots().get(0), (unit, key)->{
-			if(prev_type != unit.type && root!=null) {
-				root.clear();
-				root.put("cursors", cursors);
-				root.put("point_collection", collection);
-				sw.getBuffer().setLength(0);
-				try {
-					list_templates[unit.type].process(root, sw);
-				} catch (Exception e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-				ret.append(sw.toString());
-				
-				cursors.clear();
-			}
-			else {
-				cursors.add(key);
-			}
-		});
+		// collection.iterate((unit, key)->{
+		// 	System.out.println(unit.body);
+		// });
+		List<Integer> roots = collection.roots();
+		for(Integer root_cursor : roots) {
+			collection.iterate_tree(root_cursor, (unit, key)->{
+				System.out.println(unit.id);
+//				if(prev_type != unit.type) {
+//					root.clear();
+//					root.put("cursors", cursors);
+//					root.put("point_collection", collection);
+//					sw.getBuffer().setLength(0);
+//					try {
+//						list_templates[unit.type-1].process(root, sw);
+//					} catch (Exception e) {
+//						// TODO Auto-generated catch block
+//						e.printStackTrace();
+//					}
+//					ret.append(sw.toString());
+//					
+//					cursors.clear();
+//				}
+//				else {
+//					cursors.add(key);
+//				}
+			});
+		}
+		System.out.println(ret.toString());
 		return ret.toString();
 	}
 }

@@ -8,7 +8,8 @@ import java.util.Map;
 
 public class PointCollection {
 	public List<PointWrapper> units = new ArrayList<PointWrapper>();
-	protected Map<Integer, Integer> reverse_map = new HashMap<Integer, Integer>(), _built = new HashMap<Integer, Integer>();
+	protected Map<Integer, Integer> reverse_map = new HashMap<Integer, Integer>();
+	protected Map<Integer, Boolean> _built = new HashMap<Integer, Boolean>();
 	protected DatabaseConfig db_config;
 	protected Database dbc;
 	public class PointWrapper {
@@ -36,10 +37,13 @@ public class PointCollection {
 			return ret;
 		}
 		else {
-			if(this.units.get(ancestor) != null) {
+			if(ancestor != null && this.units.get(ancestor) != null) {
+				System.out.println("ay.");
 				this.units.add(new PointWrapper(unit, new ArrayList<Integer>(), null));
 			}
 			else {
+				System.out.println("oh.");
+				System.out.println(unit==null);
 				this.units.add(new PointWrapper(unit, new ArrayList<Integer>(), ancestor));
 			}
 			return this.count()-1;
@@ -90,7 +94,7 @@ public class PointCollection {
 	}
 	public Integer build(Integer cursor, boolean _bare, boolean _subtree) {
 		//returns root cursor
-		if(_subtree) {
+		if(!_subtree) {
 			return this._traverse_up(cursor, new ArrayList<Integer>(cursor), _bare, false);
 		}
 		else {
@@ -103,15 +107,15 @@ public class PointCollection {
 	}
 	public Integer _traverse_up(Integer cursor, ArrayList<Integer> path_trace, boolean _bare, boolean _superpath) {
 		PointWrapper current_unit = this.units.get(cursor);
-		Point ancestor = units.get(current_unit.ancestor).unit;
-		if(ancestor!=null) {
+		Point ancestor;
+		if(current_unit.ancestor!=null && (ancestor = units.get(current_unit.ancestor).unit)!=null) {
 			if(!_bare && !ancestor._db_pulled) {
 				ancestor.pull_information();
 			}
 			return this._traverse_up(current_unit.ancestor, path_trace, _bare, _superpath);
 		}
 		else {
-			String sql = "SELECT p2.parent_id AS parent_id, p2.id AS id FROM points p LEFT JOIN points p2 ON p2.id=p.parent_id WHERE p.u_id"+current_unit.unit.id+";";
+			String sql = "SELECT p2.parent AS parent, p2.id AS id FROM points p LEFT JOIN points p2 ON p2.id=p.parent WHERE p.id="+current_unit.unit.id+";";
 			try {
 				ResultSet result = this.dbc.query(sql);
 				try {
@@ -121,20 +125,22 @@ public class PointCollection {
 					System.out.println("Point "+current_unit.unit.id+" does not exist.");
 				}
 				
-				if(result.getString("parent_id")==null) {
+				if(result.getString("parent")==null) {
 					this._relevel_path_from_root(path_trace);
-					if(this._built.get(cursor) != null && !_superpath) {
+					if(this._built.get(cursor) == null && !_superpath) {
 						this._traverse_down(cursor, _bare);
 					}
+					this._built.put(cursor, true);
 					return cursor;
 				}
 				else {
-					current_unit.ancestor = result.getInt("parent_id");
-					Point parent = new Point(result.getInt("parent_id"), this.db_config);
+					System.out.println("wtf.");
+					current_unit.ancestor = result.getInt("parent");
+					Point parent = new Point(result.getInt("parent"), this.db_config);
 					parent.pull_information();
 					this.units.add(new PointWrapper(parent, new ArrayList<Integer>(cursor), null));
 					path_trace.add(cursor);
-					return this._traverse_up(result.getInt("parent_id"), path_trace, _bare, _superpath);
+					return this._traverse_up(result.getInt("parent"), path_trace, _bare, _superpath);
 				}
 			}
 			catch(SQLException e) {
@@ -150,7 +156,7 @@ public class PointCollection {
 	}
 	protected void _traverse_down(Integer cursor, boolean _bare) {
 		PointWrapper current_unit = this.units.get(cursor);
-		String sql = "SELECT id FROM points WHERE parent_id = "+current_unit.unit.id+";";
+		String sql = "SELECT id FROM points WHERE parent = "+current_unit.unit.id+";";
 		try {
 			ResultSet result = this.dbc.query(sql);
 			List<Integer> child_ids = new ArrayList<Integer>();

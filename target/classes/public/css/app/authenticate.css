@@ -1,0 +1,127 @@
+body {
+	background-image:url(../../img/front_page_gradient.jpg);
+	background-size:cover;
+}
+input {
+	-webkit-box-sizing:border-box;
+	-moz-box-sizing:border-box;
+	box-sizing:border-box;
+
+	background:none;
+	border:#333538 solid 1px;
+	outline:none;
+	background-color:#FFF;
+	padding:12px;
+	font-size:13px;
+	color:#45494d;
+	font-family:Verb;
+
+	-webkit-border-radius: 2px;
+	-moz-border-radius: 2px;
+	border-radius: 2px;
+}
+hr {
+	height:0px;
+	margin:0px;
+	border:none;
+	border-top:#131313 solid 1px;
+	border-bottom:#262626 solid 1px;
+	background:none;
+}
+#valign_container {
+	display:table;
+	width:100%;
+	height:100%;
+	color:#FFF;
+}
+#valign_wrapper {
+	display:table-row;
+	text-align:center;
+}
+#authentication_container {
+	display:table-cell;
+	vertical-align:middle;
+}
+/*#authentication_wrapper {
+	
+}*/
+#authentication_header {
+	text-align:center;
+	padding:20px 0;
+	background-color:#2a2c2f;
+	font-weight:800;
+	font-size:16px;
+}
+#pointer_triangle {
+	width: 0;
+	height: 0;
+	border-style: solid;
+	border-width: 0 15px 14px 15px;
+	border-color: transparent transparent #2a2c2f transparent;
+
+
+	margin:0 auto;
+}
+.input_container {
+	margin:17px;
+	font-style:italic;
+	font-size:14px;
+}
+label {
+	width:50px;
+	text-align:right;
+	margin-right:10px;
+}
+.button_container {
+	position:relative;
+	cursor:pointer;
+}
+.button_underlay {
+	position:absolute;
+	width:100%;
+
+	-webkit-border-radius: 2px;
+	-moz-border-radius: 2px;
+	border-radius: 2px;
+
+	bottom:-5px;
+	height:9px;
+	z-index:0;
+}
+.button_overlay {
+	padding:15px 0;
+	text-align:center;
+	position:relative;
+	top:0px;
+	z-index:1;
+	color:#FFF;
+	background-color:#d6453a;
+	width:100%;
+	vertical-align: middle;
+	-webkit-transition: all 0.2s ease-in-out;
+   transition: all 0.2s ease-in-out;
+}
+.button_overlay:hover {
+	top:-2px;
+	background-color:#dd5349;
+}
+.button_overlay:active {
+	top:3px;
+	background-color:#c83a2f;
+}
+
+.error {
+	background-color:#EB9B1C;
+	border:#DE7C1B solid 1px;
+	padding:10px;
+
+	-webkit-border-radius: 3px;
+	-moz-border-radius: 3px;
+	border-radius: 3px;
+
+	margin:15px;
+	color:#A36217;
+}
+.error_message {
+	font-weight:700;
+}

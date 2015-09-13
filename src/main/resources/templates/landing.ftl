@@ -41,20 +41,20 @@
 	</head>
 		
 	<body>
-		<div class="horizontal_nav">
-			<img src="logo.png" id="main_logo" />
-			<a href="login.html">
-				<div class="cta_button">
-					<span class="button_underlay" style="background-color:#5f4278;"></span><!--
-				--><span class="button_overlay" style="background-color:#704b8f;">LOG IN</span>
-				</div>
-			</a>
-		</div>
 		<div class="focus_container">
+			<div class="horizontal_nav">
+				<a href="login.html">
+					<span class="cta_button">
+						<span class="button_underlay" style="background-color:#5f4278;"></span><!--
+					--><span class="button_overlay" style="background-color:#704b8f;">LOG IN</span>
+					</span>
+				</a>
+				<img src="logo.png" id="main_logo" />
+			</div>
 			<div class="focus_text_wrapper">
 				<div class="focus_text">
 					<img src="pretty_picture_1.png" />
-					<h2>Finally, digital lists that makes sense.asdfkjashdfkals</h2>
+					<h2>Finally, digital lists that makes sense.</h2>
 					<p>
 						Listnote was designed to cater to two things: aesthetic perfection and seamless productivity. And it already looks amazing.
 					</p>

@@ -4,7 +4,8 @@ import java.sql.*;
 import java.sql.SQLException;
 
 public class Point {
-	public Integer id, author, level, parent_id, type;
+	public Integer id, author, level, parent;
+	public int type;
 	public String body;
 	protected TagCollection tags;
 	protected Database dbc;
@@ -17,20 +18,22 @@ public class Point {
 		this.dbc = db_config.connect(this.getClass().getSimpleName());
 		this.tags = new TagCollection(db_config);
 	}
-	public Point(int id, int author, int level, int parent_id, String body, DatabaseConfig db_config) throws IllegalArgumentException, SQLException {
+	public Point(int id, int type, int author, int level, Integer parent, String body, DatabaseConfig db_config) throws IllegalArgumentException, SQLException {
 		this.id = id;
+		this.type = type;
 		this.author = author;
 		this.level = level;
-		this.parent_id = parent_id;
+		this.parent = parent;
 		this.body = body;
 		this.db_config = db_config;
 		this.dbc = db_config.connect(this.getClass().getSimpleName());
 		this.tags = new TagCollection(db_config);
 	}
-	protected void _set_object_properties(int author, int level, int parent_id, String body) {
+	protected void _set_object_properties(int author, int type, int level, int parent, String body) {
 		this.author = author;
+		this.type = type;
 		this.level = level;
-		this.parent_id = parent_id;
+		this.parent = parent;
 		this.body = body;
 	}
 	public void pull_information() {
@@ -38,7 +41,7 @@ public class Point {
 			ResultSet result = this.dbc.query("SELECT type, user_id, body, parent, note FROM points WHERE id="+this.id+" LIMIT 1");
 			try {
 				result.next();
-				this._set_object_properties(result.getInt("user_id"), 0, result.getInt("parent"), result.getString("body"));
+				this._set_object_properties(result.getInt("user_id"), result.getInt("type"), 0, result.getInt("parent"), result.getString("body"));
 			}
 			catch(SQLException e) {
 				this._exists = false;
@@ -76,7 +79,7 @@ public class Point {
 		return level;
 	}
 	public Integer getParent_id() {
-		return parent_id;
+		return parent;
 	}
 	public Integer getType() {
 		return type;
