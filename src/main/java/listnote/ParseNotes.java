@@ -6,6 +6,7 @@ import java.sql.Timestamp;
 import java.text.DateFormatSymbols;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.StringTokenizer;
 import java.util.regex.Matcher;
@@ -19,6 +20,7 @@ public class ParseNotes {
 	public static final String[] MONTHS_FULL = dfs.getMonths();
 	
 	private static final String DAY_PATTERN = "(^0?[1-9]|[12][0-9]|3[01])"; //01 or 1 - 31
+	private static final String YEAR_PATTERN = "((19|20)\\d\\d)"; 
 	private static final String DATE_PATTERN = "((0?[1-9]|[12][0-9]|3[01])(/|-)(0?[1-9]|1[012])(/|-)((19|20)\\d\\d))"; //dd/mm/yyyy or dd-mm-yyyy
 	private static final String DEFINITION_PATTERN = "(^[a-zA-Z0-9]*)(:)"; //alphanumeric:
 	private static final String NUMBERED_LIST_PATTERN = "(\\d+)([)]|\\.)"; //1) 1. 
@@ -26,7 +28,7 @@ public class ParseNotes {
 	protected DatabaseConfig db_config;
 	protected Database dbc;
 			
-	public ParseNotes(DatabaseConfig db_config, Point point) throws IllegalArgumentException, SQLException {
+	public ParseNotes(DatabaseConfig db_config) throws IllegalArgumentException, SQLException {
 		this.db_config = db_config;
 		this.dbc = db_config.connect(this.getClass().getSimpleName());
 	}
@@ -49,16 +51,23 @@ public class ParseNotes {
 		
 	    String date = parseByPattern(DATE_PATTERN, body);
 	    if(date != "") { //found date! 
-	    	return DateParser.parseToTimestamp(body);
+	    	return DateParser.parseToTimestamp(date);
 	    } else {
 	    	StringTokenizer tokenized_body = new StringTokenizer(body);
 	    	//look for months 
 	    	while (tokenized_body.hasMoreTokens()) {
 	            String token = tokenized_body.nextToken();
-	    		if(stringContainsItemFromList(token, MONTHS_FULL) || stringContainsItemFromList(token, MONTHS_SHORT)) {
-	    			String next_token = tokenized_body.nextToken();
-	    			if(parseByPattern(DAY_PATTERN, next_token) != "") { //found date!
-	    				return DateParser.parseToTimestamp(token + " " + next_token);
+	    		if(Arrays.asList(MONTHS_FULL).contains(token) || Arrays.asList(MONTHS_SHORT).contains(token)) {
+	    			String token_day = tokenized_body.nextToken();
+	    			if(parseByPattern(DAY_PATTERN, token_day) != "") { //found date!
+	    				//check for year 
+	    				String token_year = tokenized_body.nextToken();
+	    				if(parseByPattern(YEAR_PATTERN, token_year) != "") { //also found year
+		    				return DateParser.parseToTimestamp(token + " " + token_day + " " + token_year);
+	    				} else {
+		    				return DateParser.parseToTimestamp(token + " " + token_day);
+	    				}
+	    				
 	    			}
 	    		}
 	        }
@@ -107,10 +116,11 @@ public class ParseNotes {
 		int note_id = getNoteId(point);
 	    
 	    String term = parseByPattern(DEFINITION_PATTERN, body);	    
-	    int def_begin = body.indexOf(term) + 1;
-	    String definition = body.substring(def_begin, body.length() - 1);
 	   	    
-	    if(definition != "") {
+	    if(term != "") {
+	    	int def_begin = body.indexOf(term) + 1;
+		    String definition = body.substring(def_begin + term.length(), body.length() - 1);
+		    
 		    System.out.println("Found definition: " + term + " : " + definition);
 
 			int user_id = getUserId(point);
@@ -237,12 +247,30 @@ public class ParseNotes {
 
 	
 	public static void main(String[] args) {
-//		Point test = 
+		try {
+			DatabaseConfig dbc = new DatabaseConfig();
+			Point test = new Point(1, dbc);
+			test.body = "This happened on 08/12/2006 when whoeever did whatever.";
+			
+			ParseNotes parse_notes = new ParseNotes(dbc);
+			parse_notes.parsePoint(test);
+			
+		} catch (IllegalArgumentException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 //		
 //		String datePoint = "This happened on 08/12/2006 when whoeever did whatever.";
 //		parsePoint(datePoint);
 //		
 //		String defPoint = "SomeWord: means this and that";
 //		parsePoint(defPoint);
+ catch (ParseException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 }
