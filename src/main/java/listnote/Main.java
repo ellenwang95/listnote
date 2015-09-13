@@ -13,6 +13,7 @@ import javax.servlet.http.Cookie;
 import javax.xml.ws.RequestWrapper;
 import javax.xml.ws.ResponseWrapper;
 
+import freemarker.ext.beans.BeansWrapper;
 import freemarker.template.*;
 import spark.Request;
 import spark.Response;
@@ -24,6 +25,7 @@ public class Main {
     	cfg.setDirectoryForTemplateLoading(new File(System.getProperty("user.dir")+"/src/main/resources/templates/"));
 //    	System.out.println(System.getProperty("user.dir")+"/src/main/resources/templates/");
     	cfg.setDefaultEncoding("UTF-8");
+    	cfg.setObjectWrapper(new BeansWrapper());
     	cfg.setTemplateExceptionHandler(TemplateExceptionHandler.HTML_DEBUG_HANDLER);
     	return cfg;
 	}

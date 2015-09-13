@@ -19,6 +19,9 @@ public class PointCollection {
 		public PointWrapper(Point unit, List<Integer> descendants, Integer ancestor) {
 			this.unit = unit; this.descendants = descendants; this.ancestor = ancestor;
 		}
+		public Point getUnit() {
+			return unit;
+		}
 	}
 	public PointCollection(DatabaseConfig db_config) throws IllegalArgumentException, SQLException {
 		this.db_config = db_config;
@@ -38,18 +41,16 @@ public class PointCollection {
 		}
 		else {
 			if(ancestor != null && this.units.get(ancestor) != null) {
-				System.out.println("ay.");
-				this.units.add(new PointWrapper(unit, new ArrayList<Integer>(), null));
+				this.units.add(new PointWrapper(unit, new ArrayList<Integer>(), ancestor));
 			}
 			else {
-				System.out.println("oh.");
-				System.out.println(unit==null);
-				this.units.add(new PointWrapper(unit, new ArrayList<Integer>(), ancestor));
+				this.units.add(new PointWrapper(unit, new ArrayList<Integer>(), null));
 			}
 			return this.count()-1;
 		}
 	}
 	public Integer push(Point unit) {
+		
 		return this.push(unit, null);
 	}
 	public List<Integer> roots() {
@@ -173,6 +174,7 @@ public class PointCollection {
 						}
 						new_point.level = current_unit.unit.level+1;
 						next_cursor = this.units.size();
+						this.units.get(cursor).descendants.add(next_cursor);
 						this.units.add(new PointWrapper(new_point, new ArrayList<Integer>(), cursor));
 					}
 					else {

@@ -16,6 +16,15 @@ import freemarker.template.*;
 
 public class Renderer {
 	Configuration cfg;
+	private class PseudoInteger {
+		Integer foo;
+		public PseudoInteger (Integer bar) {
+			this.foo = bar;
+		}
+		public void assign (Integer bar) {
+			this.foo = bar;
+		}
+	}
 	public Renderer(Configuration cfg) {
 		this.cfg = cfg;
 	}
@@ -56,6 +65,7 @@ public class Renderer {
 		
 		PointCollection collection = note.pull_children();
 		List<Integer> cursors = new ArrayList<Integer>();
+		Map<Integer, Integer> left_margins = new HashMap<Integer, Integer>();
 //		List<String> point_cluster = new ArrayList<String>();
 		Template[] list_templates = new Template[2];
 		try {
@@ -66,36 +76,49 @@ public class Renderer {
 		catch(IOException e) {
 			e.printStackTrace();
 		}
-		int prev_type = -1;
+		PseudoInteger prev_type = new PseudoInteger(-1);
 		StringBuilder ret = new StringBuilder();
 		// collection.iterate((unit, key)->{
 		// 	System.out.println(unit.body);
 		// });
 		List<Integer> roots = collection.roots();
 		for(Integer root_cursor : roots) {
+			System.out.print("ROOT!");
+			System.out.println(collection.units.get(root_cursor).unit.id);
 			collection.iterate_tree(root_cursor, (unit, key)->{
-				System.out.println(unit.id);
-//				if(prev_type != unit.type) {
-//					root.clear();
-//					root.put("cursors", cursors);
-//					root.put("point_collection", collection);
-//					sw.getBuffer().setLength(0);
-//					try {
-//						list_templates[unit.type-1].process(root, sw);
-//					} catch (Exception e) {
-//						// TODO Auto-generated catch block
-//						e.printStackTrace();
-//					}
-//					ret.append(sw.toString());
-//					
-//					cursors.clear();
-//				}
-//				else {
-//					cursors.add(key);
-//				}
+				cursors.add(key);
+				left_margins.put(key, 20*unit.level);
+				if(prev_type.foo != unit.type && prev_type.foo != -1) {
+					root.clear();
+					root.put("cursors", cursors);
+					root.put("point_collection", collection);
+					root.put("left_margins", left_margins);
+					sw.getBuffer().setLength(0);
+					try {
+						list_templates[unit.type-1].process(root, sw);
+					} catch (Exception e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+					ret.append(sw.toString());
+					cursors.clear();
+				}
+				prev_type.assign(unit.type);
 			});
+			root.clear();
+			root.put("cursors", cursors);
+			root.put("point_collection", collection);
+			root.put("left_margins", left_margins);
+			sw.getBuffer().setLength(0);
+			try {
+				list_templates[collection.units.get(cursors.get(0)).unit.type-1].process(root, sw);
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			ret.append(sw.toString());
+			cursors.clear();
 		}
-		System.out.println(ret.toString());
 		return ret.toString();
 	}
 }

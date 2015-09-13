@@ -4,9 +4,9 @@ import java.sql.*;
 import java.sql.SQLException;
 
 public class Point {
-	public Integer id, author, level, parent;
-	public int type;
-	public String body;
+	public Integer id, author, parent;
+	public int type, level;
+	public String body, term;
 	protected TagCollection tags;
 	protected Database dbc;
 	protected DatabaseConfig db_config;
@@ -17,6 +17,18 @@ public class Point {
 		this.db_config = db_config;
 		this.dbc = db_config.connect(this.getClass().getSimpleName());
 		this.tags = new TagCollection(db_config);
+	}
+	public Point(int id, int type, int author, int level, Integer parent, String term, String def, DatabaseConfig db_config) throws IllegalArgumentException, SQLException {
+		this.id = id;
+		this.type = type;
+		this.author = author;
+		this.level = level;
+		this.parent = parent;
+		this.body = def;
+		this.db_config = db_config;
+		this.dbc = db_config.connect(this.getClass().getSimpleName());
+		this.tags = new TagCollection(db_config);
+		this.term = term;
 	}
 	public Point(int id, int type, int author, int level, Integer parent, String body, DatabaseConfig db_config) throws IllegalArgumentException, SQLException {
 		this.id = id;
@@ -75,7 +87,7 @@ public class Point {
 	public Integer getAuthor() {
 		return author;
 	}
-	public Integer getLevel() {
+	public int getLevel() {
 		return level;
 	}
 	public Integer getParent_id() {
@@ -89,5 +101,8 @@ public class Point {
 	}
 	public TagCollection getTags() {
 		return tags;
+	}
+	public String getTerm() {
+		return this.term;
 	}
 }

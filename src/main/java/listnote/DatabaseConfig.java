@@ -20,6 +20,7 @@ public class DatabaseConfig {
 	static Map<String,String> class_to_db = new HashMap<String,String>();
 	static {
 		Map<String,String> temp_map = new HashMap<String,String>();
+		temp_map.put("DefPoint", LDB);
 		temp_map.put("ParseNotes", LDB);
 		temp_map.put("Renderer", LDB);
 		temp_map.put("Point", LDB);
