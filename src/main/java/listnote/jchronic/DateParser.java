@@ -31,12 +31,15 @@ public class DateParser {
 	  }
 	  
 	  public static Timestamp parseToTimestamp(String string) throws ParseException {
-		  return toTimestamp(parse_now(string));
+		  Span span = parse_now(string);
+		  if(span != null) {
+			  return toTimestamp(span);
+		  }
+		  return null;
+		  
 	  }
 	  
 	  public static void main(String[] args) throws ParseException {
-		  
-		  
 			
 			System.out.println(parseToTimestamp("jan 23 2004"));
 		    	    
